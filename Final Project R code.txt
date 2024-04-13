@@ -1,0 +1,242 @@
+﻿> View(final_irony)
+#Finding statistical significance of language difference
+> irony_language <-
+matrix(c(chi_irony$kz[1],chi_irony$cn[1],chi_irony$kz[2],chi_irony$cn[2]),nrow=2,byrow=TRUE,dimnames=list(c("serious","ironic"),c("kz","cn")))
+> View(irony_language)
+> chisq_lang <- chisq.test(irony_language)
+> print(chisq_lang)
+
+
+        Pearson's Chi-squared test with Yates' continuity correction
+
+
+data:  irony_language
+X-squared = 11.666, df = 1, p-value = 0.0006365
+
+
+> print(chisq_lang$expected)
+               kz        cn
+serious  86.59504  82.40496
+ironic  161.40496 153.59504
+
+
+#Finding statistical significance of age difference
+> irony_age <- matrix(c(chi_irony$age_gr1[1],chi_irony$age_gr0[1],chi_irony$age_gr1[2],chi_irony$age_gr0[2]),nrow=2,byrow=TRUE,dimnames=list(c("serious","ironic"),c("below 30","above 30")))
+
+
+> chisq_age <- chisq.test(irony_age)
+> print(chisq_age)
+
+
+        Pearson's Chi-squared test with Yates' continuity correction
+
+
+data:  irony_age
+X-squared = 0.63341, df = 1, p-value = 0.4261
+
+
+> print(chisq_age$expected)
+        below 30 above 30
+serious 141.4153 27.58471
+ironic  263.5847 51.41529
+
+
+#Finding statistical significance between CN and KZ no emoji difference
+> irony_noemoji <- matrix(c(chi_irony$noemoji_kz[1],chi_irony$noemoji_cn[1],chi_irony$noemoji_kz[2],chi_irony$noemoji_cn[2]),nrow=2,byrow=TRUE,dimnames=list(c("serious","ironic"),c("noemojikz","noemojicn")))
+> chisq_noemoji <- chisq.test(irony_noemoji)
+> print(chisq_noemoji)
+
+
+        Pearson's Chi-squared test with Yates' continuity correction
+
+
+data:  irony_noemoji
+X-squared = 0.6321, df = 1, p-value = 0.4266
+# Finding statistical significance between CN and KZ emoji difference
+
+
+> irony_emoji_kzcn <- matrix(c(chi_irony$emoji_kz[1],chi_irony$emoji_cn[1],chi_irony$emoji_kz[2],chi_irony$emoji_cn[2]),nrow=2,byrow=TRUE,dimnames=list(c("serious","ironic"),c("emojikz","emojicn")))
+> chisq_emoji <- chisq.test(irony_emoji_kzcn)
+> 
+> print(chisq_emoji)
+
+
+        Pearson's Chi-squared test with Yates' continuity correction
+
+
+data:  irony_emoji_kzcn
+X-squared = 11.302, df = 1, p-value = 0.0007742
+
+
+#Finding statistical significance between emoji and no emoji KZ language difference
+> irony_noemoji_emoji_kz <- matrix(c(chi_irony$noemoji_kz[1],chi_irony$emoji_kz[1],chi_irony$noemoji_kz[2],chi_irony$emoji_kz[2]),nrow=2,byrow=TRUE,dimnames=list(c("serious","ironic"),c("noemojikz","emojikz")))
+> chisq_noemoji_emkz <- chisq.test(irony_noemoji_emoji_kz)
+> print(chisq_noemoji_emkz)
+
+
+        Pearson's Chi-squared test with Yates' continuity correction
+
+
+data:  irony_noemoji_emoji_kz
+X-squared = 1.2388, df = 1, p-value = 0.2657
+#Finding statistical significance between emoji and no emoji CN language difference
+
+
+> irony_noemoji_emoji_cn <- matrix(c(chi_irony$noemoji_cn[1],chi_irony$emoji_cn[1],chi_irony$noemoji_cn[2],chi_irony$emoji_cn[2]),nrow=2,byrow=TRUE,dimnames=list(c("serious","ironic"),c("noemojicn","emojicn")))
+> chisq_noemoji_emcn <- chisq.test(irony_noemoji_emoji_cn)
+> print(chisq_noemoji_emkz)
+
+
+        Pearson's Chi-squared test with Yates' continuity correction
+
+
+data:  irony_noemoji_emoji_kz
+X-squared = 1.2388, df = 1, p-value = 0.2657
+
+
+
+
+
+
+#Logistic regression for independent variables "kz" and "cn". The (1|response) part specifies that there is a random intercept for the grouping variable "response".
+> final_irony$Answer <- as.factor(final_irony$Answer)
+> lang_andswer <- glmer(Answer~kz+cn+(1|response),data=final_irony,family=binomial(link="logit"))
+
+
+> summary(lang_andswer)
+
+
+Generalized linear mixed model fit by maximum likelihood (Laplace  Approximation)
+ [glmerMod]
+ Family: binomial  ( logit )
+Formula: Answer ~ kz + cn + (1 | response)
+   Data: final_irony
+
+
+     AIC      BIC   logLik deviance df.resid 
+   615.9    628.4   -304.9    609.9      481 
+
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.1531 -0.7033 -0.5370  1.1153  1.8622 
+
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ response (Intercept) 0.2517   0.5017  
+Number of obs: 484, groups:  response, 61
+
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -1.0446     0.1791  -5.833 5.45e-09 ***
+kz            0.7169     0.2390   2.999  0.00271 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+Correlation of Fixed Effects:
+   (Intr)
+kz -0.741
+fit warnings:
+fixed-effect model matrix is rank deficient so dropping 1 column / coefficient
+> exp(0.7169)
+[1] 2.048074
+
+
+# Logistic regression for independent variables "kz" and "cn". The (1|age) part specifies that there is a random intercept for the grouping variable "age".
+> lang_andswer <- glmer(Answer~kz+cn+(1|age),data=final_irony,family=binomial(link="logit"))
+fixed-effect model matrix is rank deficient so dropping 1 column / coefficient
+> summary(lang_andswer)
+Generalized linear mixed model fit by maximum likelihood (Laplace  Approximation)
+ [glmerMod]
+ Family: binomial  ( logit )
+Formula: Answer ~ kz + cn + (1 | age)
+   Data: final_irony
+
+
+     AIC      BIC   logLik deviance df.resid 
+   612.8    625.3   -303.4    606.8      481 
+
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.1462 -0.7132 -0.5657  1.1298  1.9391 
+
+
+Random effects:
+ Groups Name        Variance Std.Dev.
+ age    (Intercept) 0.2308   0.4804  
+Number of obs: 484, groups:  age, 18
+
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -1.0154     0.1952  -5.201 1.99e-07 ***
+kz            0.8955     0.2563   3.495 0.000475 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+Correlation of Fixed Effects:
+   (Intr)
+kz -0.468
+fit warnings:
+fixed-effect model matrix is rank deficient so dropping 1 column / coefficient
+
+
+
+
+
+
+
+
+
+
+# Logistic regression for independent variables "kz" and "cn". The (1|age_category) part specifies that there is a random intercept for the grouping variable "age_category".
+
+
+> lang_andswer <- glmer(Answer~kz+cn+(1|age_category),data=final_irony,family=binomial(link="logit"))
+fixed-effect model matrix is rank deficient so dropping 1 column / coefficient
+boundary (singular) fit: see help('isSingular')
+
+
+> summary(lang_andswer)
+Generalized linear mixed model fit by maximum likelihood (Laplace  Approximation)
+ [glmerMod]
+ Family: binomial  ( logit )
+Formula: Answer ~ kz + cn + (1 | age_category)
+   Data: final_irony
+
+
+     AIC      BIC   logLik deviance df.resid 
+   619.8    632.4   -306.9    613.8      481 
+
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.8569 -0.8569 -0.6100  1.1670  1.6394
+
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ age_category (Intercept) 0        0       
+Number of obs: 484, groups:  age_category, 2
+
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -0.9886     0.1464  -6.752 1.46e-11 ***
+kz            0.6797     0.1948   3.489 0.000485 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+Correlation of Fixed Effects:
+   (Intr)
+kz -0.752
+fit warnings:
+fixed-effect model matrix is rank deficient so dropping 1 column / coefficient
+optimizer (Nelder_Mead) convergence code: 0 (OK)
+boundary (singular) fit: see help('isSingular')
